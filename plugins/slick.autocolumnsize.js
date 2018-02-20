@@ -47,6 +47,7 @@
             var allColumns = _grid.getColumns();
             elHeaders.each(function (index, el) {
                 var columnDef = $(el).data('column');
+				if (!columnDef.resizable) return;
                 var headerWidth = getElementWidth(el);
                 var colIndex = _grid.getColumnIndex(columnDef.id);
                 var column = allColumns[colIndex];
@@ -54,7 +55,7 @@
                 autoSizeWidth = Math.min(maxWidth, autoSizeWidth);
                 column.width = autoSizeWidth;
             });
-            _grid.setColumns(allColumns);
+            _grid.autosizeColumns();
             _grid.onColumnsResized.notify();
         }
 
@@ -76,7 +77,7 @@
 
             if (autoSizeWidth !== headerWidth) {
                 columnDef.width = autoSizeWidth;
-                _grid.setColumns(allColumns);
+                _grid.autosizeColumns();
                 _grid.onColumnsResized.notify();
             }
         }
@@ -101,7 +102,7 @@
 
             if (autoSizeWidth !== column.width) {
                 column.width = autoSizeWidth;
-                _grid.setColumns(allColumns);
+                _grid.autosizeColumns();
                 _grid.onColumnsResized.notify();
             }
         }
