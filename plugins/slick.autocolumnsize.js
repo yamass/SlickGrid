@@ -1,4 +1,4 @@
-﻿(function ($) {
+(function ($) {
 
     $.extend(true, window, {
         "Slick": {
@@ -11,29 +11,41 @@
     function AutoColumnSize(options) {
         var _grid;
         var _self = this;
+        var _handler = new Slick.EventHandler();
         var _defaults = {
             maxWidth: 200
         };
-        var $container;
-        var context;
-            keyCodes = {
-                'A': 65
-            };
 
-            function init(grid) {
+        var context;
+        keyCodes = {
+            'A': 65
+        };
+
+        function init(grid) {
             options = $.extend(true, {}, _defaults, options);
             _grid = grid;
             maxWidth = options.maxWidth;
 
-            $container = $(_grid.getContainerNode());
-            $container.on("dblclick.autosize", ".slick-resizable-handle", reSizeColumn);
-            $container.keydown(handleControlKeys);
+            _handler
+                .subscribe(_grid.onHeaderCellRendered, handleHeaderCellRendered)
+                .subscribe(_grid.onBeforeHeaderCellDestroy, handleBeforeHeaderCellDestroy)
+                .subscribe(_grid.onKeyDown, handleControlKeys);
 
             context = document.createElement("canvas").getContext("2d");
         }
 
+        function handleHeaderCellRendered(e, args) {
+            var c = args.node;
+            $(c).on("dblclick.autosize", ".slick-resizable-handle", reSizeColumn);            
+        }
+
+        function handleBeforeHeaderCellDestroy(e, args) {           
+            var c = args.node;
+            $(c).off("dblclick.autosize", ".slick-resizable-handle", reSizeColumn);
+        }
+
         function destroy() {
-            $container.off();
+            _handler.unsubscribeAll();
         }
 
         function handleControlKeys(event) {
@@ -43,11 +55,11 @@
         }
 
         function resizeAllColumns() {
-            var elHeaders = $container.find(".slick-header-column");
+            var elHeaders = $(_grid.getContainerNode()).find(".slick-header-column");
             var allColumns = _grid.getColumns();
             elHeaders.each(function (index, el) {
                 var columnDef = $(el).data('column');
-				if (!columnDef.resizable) return;
+                if (columnDef && !columnDef.resizable) return;
                 var headerWidth = getElementWidth(el);
                 var colIndex = _grid.getColumnIndex(columnDef.id);
                 var column = allColumns[colIndex];
@@ -63,15 +75,14 @@
             var columnIdx = _grid.getColumnIndex(name);
             var allColumns = _grid.getColumns();
             var columnDef;
-            if (columnIdx !== undefined)
-            {
+            if (columnIdx !== undefined) {
                 columnDef = allColumns[columnIdx];
             }
 
             if (!columnDef || !columnDef.resizable) {
                 return;
             }
-            
+
             var headerWidth = columnDef.width;
             var autoSizeWidth = Math.max(headerWidth, getMaxColumnTextWidth(columnDef, columnIdx)) + 1;
 
@@ -156,7 +167,7 @@
                 "text-overflow": "initial",
                 "white-space": "nowrap"
             });
-            var gridCanvas = $container.find(".grid-canvas");
+            var gridCanvas = $(_grid.getContainerNode()).find(".grid-canvas");
             $(gridCanvas).append(rowEl);
             return rowEl;
         }
@@ -179,7 +190,7 @@
             var metrics = context.measureText(text);
             return metrics.width;
         }
-        
+
         return {
             "init": init,
             "destroy": destroy,
