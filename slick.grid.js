@@ -737,12 +737,12 @@ if (typeof Slick === "undefined") {
 
         var header = $("<div class='ui-state-default slick-header-column' />")
             .html("<span class='slick-column-name'>" + m.name + "</span>")
-            .width(m.width - headerColumnWidthDiff)
             .attr("id", "" + uid + m.id)
             .attr("title", m.toolTip || "")
             .data("column", m)
             .addClass(m.headerCssClass || "")
             .appendTo($headers);
+      header[0].style.width = (m.width - headerColumnWidthDiff) + "px";
 
         if (options.enableColumnReorder || m.sortable) {
           header
